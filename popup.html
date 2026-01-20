@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Proxy</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🖼️ Image Proxy</h1>
+    </header>
+
+    <main>
+      <div class="toggle-container">
+        <label class="switch">
+          <input type="checkbox" id="toggleEnabled" checked>
+          <span class="slider"></span>
+        </label>
+        <span class="toggle-label" id="statusLabel">Enabled</span>
+      </div>
+
+      <button id="refreshImages" class="btn-action">
+        ↻ Refresh Images
+      </button>
+
+      <button id="openSettings" class="btn-settings">
+        ⚙️ Settings
+      </button>
+
+      <button id="refreshPage" class="btn-refresh">
+        ↻ Refresh Page
+      </button>
+    </main>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
