@@ -24,21 +24,27 @@ let replacementMode = 'all';
  */
 function injectCSS() {
   const styleId = 'image-proxy-styles';
-  if (document.getElementById(styleId)) {
-    return; // Already injected
+
+  // Remove existing style if present
+  const existingStyle = document.getElementById(styleId);
+  if (existingStyle) {
+    existingStyle.remove();
   }
 
-  const css = `
-    .image-proxy-override {
-      visibility: visible !important;
-    }
-  `;
+  // Load custom CSS from storage
+  chrome.storage.sync.get(['customCss'], (result) => {
+    const defaultCss = `.image-proxy-override {
+  visibility: visible !important;
+}`;
 
-  const style = document.createElement('style');
-  style.id = styleId;
-  style.type = 'text/css';
-  style.appendChild(document.createTextNode(css));
-  document.head.appendChild(style);
+    const css = result.customCss || defaultCss;
+
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.type = 'text/css';
+    style.appendChild(document.createTextNode(css));
+    document.head.appendChild(style);
+  });
 }
 
 /**
@@ -493,6 +499,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       processImages();
     });
 
+    sendResponse({ success: true });
+  } else if (request.action === 'reloadCss') {
+    // Reload injected CSS
+    injectCSS();
     sendResponse({ success: true });
   }
 });

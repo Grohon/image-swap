@@ -11,7 +11,15 @@ const urlInput = document.getElementById('urlInput');
 const addUrlButton = document.getElementById('addUrl');
 const urlList = document.getElementById('urlList');
 
+const customCssTextarea = document.getElementById('customCss');
+const saveCustomCssButton = document.getElementById('saveCustomCss');
+
 const saveNotification = document.getElementById('saveNotification');
+
+// Default CSS
+const DEFAULT_CSS = `.image-proxy-override {
+  visibility: visible !important;
+}`;
 
 /**
  * Show save notification
@@ -172,13 +180,16 @@ function removeUrlPattern(index) {
  */
 function init() {
   // Load current settings
-  chrome.storage.sync.get(['whitelist', 'urlPatterns', 'replacementMode'], (result) => {
+  chrome.storage.sync.get(['whitelist', 'urlPatterns', 'replacementMode', 'customCss'], (result) => {
     renderWhitelist(result.whitelist || []);
     renderUrlPatterns(result.urlPatterns || []);
 
     // Set replacement mode
     const mode = result.replacementMode || 'all';
     document.getElementById(mode === 'failed' ? 'modeFailed' : 'modeAll').checked = true;
+
+    // Set custom CSS
+    customCssTextarea.value = result.customCss || DEFAULT_CSS;
   });
 
   // Add event listeners
@@ -201,6 +212,20 @@ function init() {
     radio.addEventListener('change', (e) => {
       chrome.storage.sync.set({ replacementMode: e.target.value }, () => {
         showSaveNotification();
+      });
+    });
+  });
+
+  // Handle custom CSS save
+  saveCustomCssButton.addEventListener('click', () => {
+    const customCss = customCssTextarea.value.trim();
+    chrome.storage.sync.set({ customCss }, () => {
+      showSaveNotification();
+      // Notify content scripts to reload CSS
+      chrome.tabs.query({}, (tabs) => {
+        tabs.forEach(tab => {
+          chrome.tabs.sendMessage(tab.id, { action: 'reloadCss' }).catch(() => {});
+        });
       });
     });
   });
