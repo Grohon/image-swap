@@ -86,19 +86,16 @@ function isUrlAllowed() {
 function isWhitelisted(img) {
   return whitelistCache.some(selector => {
     try {
-      // Handle class selectors (.classname)
-      if (selector.startsWith('.')) {
-        const className = selector.substring(1);
-        return img.classList.contains(className);
+      // First, try direct match (for selectors like .class, #id)
+      if (img.matches(selector)) {
+        return true;
       }
-      // Handle id selectors (#elementid)
-      else if (selector.startsWith('#')) {
-        const id = selector.substring(1);
-        return img.id === id;
-      }
-      return false;
+
+      // For nested selectors (e.g., .parent img), check if img is in the result set
+      const matches = document.querySelectorAll(selector);
+      return Array.from(matches).includes(img);
     } catch (e) {
-      console.warn('[Image Proxy] Invalid selector:', selector);
+      // Fallback for invalid selectors
       return false;
     }
   });

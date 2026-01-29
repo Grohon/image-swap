@@ -91,9 +91,11 @@ function addWhitelistEntry() {
     return;
   }
 
-  // Validate selector format
-  if (!selector.startsWith('.') && !selector.startsWith('#')) {
-    alert('Selector must start with . (class) or # (id)');
+  // Basic validation - try to use querySelector to validate selector
+  try {
+    document.querySelector(selector);
+  } catch (e) {
+    alert('Invalid CSS selector');
     return;
   }
 

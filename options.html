@@ -23,13 +23,13 @@
           <input
             type="text"
             id="whitelistInput"
-            placeholder="e.g., .logo, #header-img, .no-replace"
+            placeholder="e.g., .logo, #header-img, .wrapper img"
             class="input-field">
           <button id="addWhitelist" class="btn-primary">Add</button>
         </div>
 
         <div class="help-text">
-          Use <code>.classname</code> for classes or <code>#elementid</code> for IDs
+          Supports any CSS selector: <code>.class</code>, <code>#id</code>, or nested like <code>.parent img</code>
         </div>
 
         <div class="list-container" id="whitelistList">
