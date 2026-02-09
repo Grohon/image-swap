@@ -1,6 +1,6 @@
-# Image Proxy - Chrome Extension
+# ImageSwap - Chrome Extension
 
-A Chrome extension that automatically replaces all images on webpages with randomly generated Picsum Photos URLs while maintaining original dimensions.
+A Chrome extension that instantly swaps all webpage images with beautiful, randomly generated Picsum Photos while maintaining original dimensions. Perfect for designers, developers, and anyone who wants to transform their browsing experience.
 
 ## Features
 
@@ -197,8 +197,8 @@ const picsumUrl = `https://picsum.photos/seed/${seed}/${width}/${height}?graysca
    - Dynamically added images (e.g., infinite scroll)
 
 2. Check browser console for logs:
-   - `[Image Proxy] Processing X images`
-   - `[Image Proxy] Replaced image: WIDTHxHEIGHT, seed: SEED`
+   - `[ImageSwap] Processing X images`
+   - `[ImageSwap] Replaced image: WIDTHxHEIGHT, seed: SEED`
 
 3. Test toggle functionality:
    - Disable extension
@@ -224,23 +224,24 @@ const picsumUrl = `https://picsum.photos/seed/${seed}/${width}/${height}?graysca
 
 ## Future Enhancements
 
-- [ ] Add options page for more customization
 - [ ] Allow users to set custom default dimensions
 - [ ] Add blur/grayscale filters
-- [ ] Whitelist/blacklist specific domains
+- [ ] Blacklist specific domains
 - [ ] Statistics (images replaced counter)
 - [ ] Support for background images
 
-## Version History
-
-**v1.0.0** (2026-01-20)
-- Initial release
-- Basic image replacement functionality
-- MutationObserver for dynamic content
-- Popup UI with enable/disable toggle
-- Stable seed generation
-- Chrome Manifest V3 support
-
 ## License
 
-Free to use and modify.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Privacy
+
+Your privacy is important. This extension does not collect, store, or transmit any personal information. All settings are stored locally in your browser. For more information, see our [Privacy Policy](PRIVACY_POLICY.md).
+
+## Security
+
+If you discover a security vulnerability, please review our [Security Policy](SECURITY.md) for responsible disclosure guidelines.
+
+## Credits
+
+See [CREDITS.md](CREDITS.md) for attributions and acknowledgments.

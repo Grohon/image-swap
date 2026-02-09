@@ -22,6 +22,18 @@ const DEFAULT_CSS = `.image-proxy-override {
 }`;
 
 /**
+ * Sanitize custom CSS to prevent security issues
+ * Removes potentially dangerous content like script tags and javascript URLs
+ */
+function sanitizeCSS(css) {
+  return css
+    .replace(/<script[^>]*>.*?<\/script>/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+\s*=/gi, '')
+    .replace(/<\/?\w+[^>]*>/g, ''); // Remove HTML tags
+}
+
+/**
  * Show save notification
  */
 function showSaveNotification() {
@@ -220,7 +232,7 @@ function init() {
 
   // Handle custom CSS save
   saveCustomCssButton.addEventListener('click', () => {
-    const customCss = customCssTextarea.value.trim();
+    const customCss = sanitizeCSS(customCssTextarea.value.trim());
     chrome.storage.sync.set({ customCss }, () => {
       showSaveNotification();
       // Notify content scripts to reload CSS

@@ -1,5 +1,5 @@
 /**
- * Content Script: Image Proxy with Picsum Photos
+ * Content Script: ImageSwap with Picsum Photos
  * Replaces all <img> src attributes with Picsum Photos URLs
  */
 
@@ -223,6 +223,14 @@ function replaceImageSrc(img) {
     img.classList.add('image-proxy-override');
     removeVisibilityStyles(img);
     processedImages.add(img);
+
+    // Add error handler for Picsum API failures
+    img.addEventListener('error', (e) => {
+      // If Picsum fails, mark as processed to avoid infinite loops
+      if (img.src.includes('picsum.photos')) {
+        processedImages.add(img);
+      }
+    }, { once: true });
   }
 }
 
