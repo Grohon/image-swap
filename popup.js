@@ -42,7 +42,7 @@ toggleCheckbox.addEventListener('change', (e) => {
           action: 'toggleEnabled',
           enabled: enabled
         }).catch(err => {
-          console.log('Could not send message to content script:', err);
+          // Could not send message to content script
         });
       }
     });
@@ -76,7 +76,7 @@ refreshImagesButton.addEventListener('click', () => {
           refreshImagesButton.textContent = '🔄 Refresh Images';
         }, 1500);
       }).catch(err => {
-        console.log('Could not send message to content script:', err);
+        // Could not send message to content script
       });
     }
   });

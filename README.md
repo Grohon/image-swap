@@ -1,6 +1,6 @@
-# Image Proxy - Chrome Extension
+# ImageSwap - Chrome Extension
 
-A Chrome extension that automatically replaces all images on webpages with randomly generated Picsum Photos URLs while maintaining original dimensions.
+A Chrome extension that instantly swaps all webpage images with beautiful, randomly generated Picsum Photos while maintaining original dimensions. Perfect for designers, developers, and anyone who wants to transform their browsing experience.
 
 ## Features
 
@@ -31,9 +31,24 @@ A Chrome extension that automatically replaces all images on webpages with rando
 - Instant on/off without page reload
 
 ⚪ **Whitelist Support**
-- Exclude specific images from replacement by class or id
-- Add/remove whitelist entries from popup UI
-- Changes apply immediately upon page refresh
+- Exclude specific images from replacement by CSS class or ID
+- Manage whitelist entries from the settings page
+- Changes apply after page refresh
+
+🌐 **URL Pattern Filtering**
+- Control which websites the extension runs on
+- Support for wildcard patterns (e.g., `*.example.com`)
+- Allows site-specific image replacement
+
+🎨 **Custom CSS Injection**
+- Add custom CSS rules to enhance image visibility
+- Built-in sanitization for security
+- Persistent across sessions via Chrome Sync
+
+🔀 **Replacement Modes**
+- **Replace All**: Replace every image on the page
+- **Failed Only**: Replace only broken/failed images
+- Toggle between modes in settings
 
 ## Installation
 
@@ -42,17 +57,16 @@ A Chrome extension that automatically replaces all images on webpages with rando
 1. Open Chrome and navigate to `chrome://extensions/`
 2. Enable "Developer mode" (toggle in top-right corner)
 3. Click "Load unpacked"
-4. Select the `image-proxy-local` folder
+4. Select the extension folder
 5. The extension is now installed and active!
 
-### Generate Icons (Optional)
+### Icons Included
 
-The extension requires icons in the `icons/` folder:
+The extension includes all necessary icons in the `icons/` folder:
 - `icon16.png` (16x16)
 - `icon48.png` (48x48)
 - `icon128.png` (128x128)
-
-You can create these manually or use an icon generator. For now, you can comment out the icon references in `manifest.json` to run without icons.
+- `icon.png` (main icon)
 
 ## Usage
 
@@ -68,22 +82,31 @@ You can create these manually or use an icon generator. For now, you can comment
 2. Use the toggle switch to enable/disable the feature
 3. Click "Refresh Page" to reload with updated settings
 
-### Whitelist Images
+### Configure Settings
 
-To exclude specific images from replacement:
+Click the extension icon and select **"Settings"** to access the full options page:
 
-1. Click the extension icon
-2. In the **Whitelist** section, select either:
-   - **Class**: To exclude images with a specific CSS class
-   - **ID**: To exclude images with a specific ID attribute
-3. Enter the class name or ID value (without `.` or `#`)
-4. Click the **+** button to add
-5. Refresh the page to apply changes
+**Whitelist Images:**
+1. Choose **Class** or **ID** selector type
+2. Enter the selector (without `.` or `#`)
+3. Click **+** to add
+4. Examples:
+   - Exclude `<img class="logo">` → Add Class: `logo`
+   - Exclude `<img id="header-img">` → Add ID: `header-img`
 
-**Examples:**
-- To exclude `<img class="logo">`, add **Class**: `logo`
-- To exclude `<img id="header-img">`, add **ID**: `header-img`
-- To remove an entry, click the **✕** button next to it
+**URL Patterns:**
+1. Add patterns to control which sites are affected
+2. Supports wildcards: `*.example.com`, `https://example.com/*`
+3. Leave empty to run on all sites
+
+**Replacement Mode:**
+- **Replace All**: Replaces every image (default)
+- **Failed Images Only**: Only replaces broken/failed images
+
+**Custom CSS:**
+- Add custom CSS rules to control image appearance
+- Default: `.image-proxy-override { visibility: visible !important; }`
+- Changes apply immediately after saving
 
 ### How It Works
 
@@ -112,18 +135,26 @@ To exclude specific images from replacement:
 ## File Structure
 
 ```
-image-proxy-local/
-├── manifest.json       # Extension configuration (Manifest V3)
-├── background.js       # Service worker for state management
-├── content.js          # Main logic for image replacement
-├── popup.html          # Popup UI structure
-├── popup.css           # Popup styling
-├── popup.js            # Popup functionality
-├── README.md           # This file
-└── icons/              # Extension icons (to be added)
+imageswap/
+├── manifest.json          # Extension configuration (Manifest V3)
+├── background.js          # Service worker for state management
+├── content.js             # Main logic for image replacement
+├── popup.html             # Popup UI structure
+├── popup.css              # Popup styling
+├── popup.js               # Popup functionality
+├── options.html           # Settings page structure
+├── options.css            # Settings page styling
+├── options.js             # Settings page functionality
+├── LICENSE                # MIT License
+├── PRIVACY_POLICY.md      # Privacy policy
+├── SECURITY.md            # Security policy
+├── CREDITS.md             # Credits and attributions
+├── README.md              # This file
+└── icons/                 # Extension icons
     ├── icon16.png
     ├── icon48.png
-    └── icon128.png
+    ├── icon128.png
+    └── icon.png
 ```
 
 ## Code Explanation
@@ -154,8 +185,16 @@ Manages the popup interface:
 ### background.js
 
 Service worker that:
-- Initializes default settings on installation
-- Logs state changes for debugging
+- Initializes default settings on installation (sets `enabled: true`)
+- Monitors storage changes for extension state
+
+### options.js
+
+Manages the settings/options page:
+- Whitelist management (add/remove entries)
+- URL pattern configuration
+- Replacement mode selection
+- Custom CSS editor with sanitization
 
 ## Customization
 
@@ -197,8 +236,8 @@ const picsumUrl = `https://picsum.photos/seed/${seed}/${width}/${height}?graysca
    - Dynamically added images (e.g., infinite scroll)
 
 2. Check browser console for logs:
-   - `[Image Proxy] Processing X images`
-   - `[Image Proxy] Replaced image: WIDTHxHEIGHT, seed: SEED`
+   - `[ImageSwap] Processing X images`
+   - `[ImageSwap] Replaced image: WIDTHxHEIGHT, seed: SEED`
 
 3. Test toggle functionality:
    - Disable extension
@@ -224,23 +263,34 @@ const picsumUrl = `https://picsum.photos/seed/${seed}/${width}/${height}?graysca
 
 ## Future Enhancements
 
-- [ ] Add options page for more customization
 - [ ] Allow users to set custom default dimensions
 - [ ] Add blur/grayscale filters
-- [ ] Whitelist/blacklist specific domains
+- [ ] Blacklist specific domains
 - [ ] Statistics (images replaced counter)
 - [ ] Support for background images
 
-## Version History
-
-**v1.0.0** (2026-01-20)
-- Initial release
-- Basic image replacement functionality
-- MutationObserver for dynamic content
-- Popup UI with enable/disable toggle
-- Stable seed generation
-- Chrome Manifest V3 support
-
 ## License
 
-Free to use and modify.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Privacy
+
+Your privacy is important. This extension does not collect, store, or transmit any personal information. All settings are stored locally in your browser. For more information, see our [Privacy Policy](PRIVACY_POLICY.md).
+
+## Security
+
+If you discover a security vulnerability, please review our [Security Policy](SECURITY.md) for responsible disclosure guidelines.
+
+## Credits
+
+See [CREDITS.md](CREDITS.md) for attributions and acknowledgments.
+
+## Repository
+
+**GitHub:** https://github.com/Grohon/image-swap
+**Issues:** https://github.com/Grohon/image-swap/issues
+**Author:** Abu Foysal
+
+---
+
+**ImageSwap** - Transform your browsing experience with beautiful placeholder images! ✨

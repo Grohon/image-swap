@@ -1,5 +1,5 @@
 /**
- * Content Script: Image Proxy with Picsum Photos
+ * Content Script: ImageSwap with Picsum Photos
  * Replaces all <img> src attributes with Picsum Photos URLs
  */
 
@@ -24,21 +24,27 @@ let replacementMode = 'all';
  */
 function injectCSS() {
   const styleId = 'image-proxy-styles';
-  if (document.getElementById(styleId)) {
-    return; // Already injected
+
+  // Remove existing style if present
+  const existingStyle = document.getElementById(styleId);
+  if (existingStyle) {
+    existingStyle.remove();
   }
 
-  const css = `
-    .image-proxy-override {
-      visibility: visible !important;
-    }
-  `;
+  // Load custom CSS from storage
+  chrome.storage.sync.get(['customCss'], (result) => {
+    const defaultCss = `.image-proxy-override {
+  visibility: visible !important;
+}`;
 
-  const style = document.createElement('style');
-  style.id = styleId;
-  style.type = 'text/css';
-  style.appendChild(document.createTextNode(css));
-  document.head.appendChild(style);
+    const css = result.customCss || defaultCss;
+
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.type = 'text/css';
+    style.appendChild(document.createTextNode(css));
+    document.head.appendChild(style);
+  });
 }
 
 /**
@@ -80,19 +86,16 @@ function isUrlAllowed() {
 function isWhitelisted(img) {
   return whitelistCache.some(selector => {
     try {
-      // Handle class selectors (.classname)
-      if (selector.startsWith('.')) {
-        const className = selector.substring(1);
-        return img.classList.contains(className);
+      // First, try direct match (for selectors like .class, #id)
+      if (img.matches(selector)) {
+        return true;
       }
-      // Handle id selectors (#elementid)
-      else if (selector.startsWith('#')) {
-        const id = selector.substring(1);
-        return img.id === id;
-      }
-      return false;
+
+      // For nested selectors (e.g., .parent img), check if img is in the result set
+      const matches = document.querySelectorAll(selector);
+      return Array.from(matches).includes(img);
     } catch (e) {
-      console.warn('[Image Proxy] Invalid selector:', selector);
+      // Fallback for invalid selectors
       return false;
     }
   });
@@ -220,6 +223,14 @@ function replaceImageSrc(img) {
     img.classList.add('image-proxy-override');
     removeVisibilityStyles(img);
     processedImages.add(img);
+
+    // Add error handler for Picsum API failures
+    img.addEventListener('error', (e) => {
+      // If Picsum fails, mark as processed to avoid infinite loops
+      if (img.src.includes('picsum.photos')) {
+        processedImages.add(img);
+      }
+    }, { once: true });
   }
 }
 
@@ -493,6 +504,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       processImages();
     });
 
+    sendResponse({ success: true });
+  } else if (request.action === 'reloadCss') {
+    // Reload injected CSS
+    injectCSS();
     sendResponse({ success: true });
   }
 });
