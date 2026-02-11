@@ -4,7 +4,6 @@
   "version": "1.0.0",
   "description": "Instantly swap all webpage images with beautiful Picsum photos. Perfect for designers and developers.",
   "author": "Abu Foysal",
-  "homepage_url": "https://github.com/Grohon/image-swap",
   "permissions": [
     "storage",
     "activeTab"

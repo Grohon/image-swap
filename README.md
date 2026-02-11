@@ -52,6 +52,11 @@ A Chrome extension that instantly swaps all webpage images with beautiful, rando
 
 ## Installation
 
+### Install from Chrome Web Store
+
+1. Visit the [ImageSwap on Chrome Web Store](https://chromewebstore.google.com/detail/imageswap/fckckikjcnkcnkdojemjcmdlaligmaom).
+2. Click **Add to Chrome** and confirm the installation.
+
 ### Load as Unpacked Extension
 
 1. Open Chrome and navigate to `chrome://extensions/`
