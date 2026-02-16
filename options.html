@@ -14,86 +14,88 @@
     </header>
 
     <main>
-      <!-- Whitelist Section -->
-      <section class="settings-section">
-        <h2>⚪ Whitelist</h2>
-        <p class="description">Exclude images using CSS selectors</p>
+      <div class="w-sections">
+        <!-- Whitelist Section -->
+        <section class="settings-section">
+          <h2>⚪ Whitelist</h2>
+          <p class="description">Exclude images using CSS selectors</p>
 
-        <div class="input-row">
-          <input
-            type="text"
-            id="whitelistInput"
-            placeholder="e.g., .logo, #header-img, .wrapper img"
-            class="input-field">
-          <button id="addWhitelist" class="btn-primary">Add</button>
-        </div>
+          <div class="input-row">
+            <input
+              type="text"
+              id="whitelistInput"
+              placeholder="e.g., .logo, #header-img, .wrapper img"
+              class="input-field">
+            <button id="addWhitelist" class="btn-primary">Add</button>
+          </div>
 
-        <div class="help-text">
-          Supports any CSS selector: <code>.class</code>, <code>#id</code>, or nested like <code>.parent img</code>
-        </div>
+          <div class="help-text">
+            Supports any CSS selector: <code>.class</code>, <code>#id</code>, or nested like <code>.parent img</code>
+          </div>
 
-        <div class="list-container" id="whitelistList">
-          <p class="empty-message">No whitelist entries</p>
-        </div>
-      </section>
+          <div class="list-container" id="whitelistList">
+            <p class="empty-message">No whitelist entries</p>
+          </div>
+        </section>
 
-      <!-- Replacement Mode Section -->
-      <section class="settings-section">
-        <h2>🔧 Replacement Mode</h2>
-        <p class="description">Choose when to replace images</p>
+        <!-- Replacement Mode Section -->
+        <section class="settings-section">
+          <h2>🔧 Replacement Mode</h2>
+          <p class="description">Choose when to replace images</p>
 
-        <div class="radio-group">
-          <label class="radio-label">
-            <input type="radio" name="mode" value="all" id="modeAll" checked>
-            <span>Replace all images</span>
-          </label>
-          <label class="radio-label">
-            <input type="radio" name="mode" value="failed" id="modeFailed">
-            <span>Only replace failed images (fallback mode)</span>
-          </label>
-        </div>
-      </section>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="mode" value="all" id="modeAll" checked>
+              <span>Replace all images</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="mode" value="failed" id="modeFailed">
+              <span>Only replace failed images (fallback mode)</span>
+            </label>
+          </div>
+        </section>
 
-      <!-- URL Patterns Section -->
-      <section class="settings-section">
-        <h2>🌐 Active URLs</h2>
-        <p class="description">Extension will only work on these URL patterns (leave empty for all sites)</p>
+        <!-- URL Patterns Section -->
+        <section class="settings-section">
+          <h2>🌐 Active URLs</h2>
+          <p class="description">Extension will only work on these URL patterns (leave empty for all sites)</p>
 
-        <div class="input-row">
-          <input
-            type="text"
-            id="urlInput"
-            placeholder="e.g., *://example.com/*, *://*.google.com/*"
-            class="input-field">
-          <button id="addUrl" class="btn-primary">Add</button>
-        </div>
+          <div class="input-row">
+            <input
+              type="text"
+              id="urlInput"
+              placeholder="e.g., *://example.com/*, *://*.google.com/*"
+              class="input-field">
+            <button id="addUrl" class="btn-primary">Add</button>
+          </div>
 
-        <div class="help-text">
-          Use <code>*</code> as wildcard. Examples: <code>*://*.test/*</code>, <code>*://github.com/*</code>, <code>https://*.example.com/*</code>
-        </div>
+          <div class="help-text">
+            Use <code>*</code> as wildcard. Examples: <code>*://*.test/*</code>, <code>*://github.com/*</code>, <code>https://*.example.com/*</code>
+          </div>
 
-        <div class="list-container" id="urlList">
-          <p class="empty-message">Active on all sites</p>
-        </div>
-      </section>
+          <div class="list-container" id="urlList">
+            <p class="empty-message">Active on all sites</p>
+          </div>
+        </section>
 
-      <!-- Custom CSS Section -->
-      <section class="settings-section">
-        <h2>🎨 Custom CSS</h2>
-        <p class="description">Inject custom CSS into pages (advanced)</p>
+        <!-- Custom CSS Section -->
+        <section class="settings-section">
+          <h2>🎨 Custom CSS</h2>
+          <p class="description">Inject custom CSS into pages (advanced)</p>
 
-        <textarea
-          id="customCss"
-          class="css-textarea"
-          rows="8"
-          placeholder="Enter custom CSS..."></textarea>
+          <textarea
+            id="customCss"
+            class="css-textarea"
+            rows="8"
+            placeholder="Enter custom CSS..."></textarea>
 
-        <div class="help-text">
-          This CSS will be injected into every page where the extension is active
-        </div>
+          <div class="help-text">
+            This CSS will be injected into every page where the extension is active
+          </div>
 
-        <button id="saveCustomCss" class="btn-primary">Save CSS</button>
-      </section>
+          <button id="saveCustomCss" class="btn-primary">Save CSS</button>
+        </section>
+      </div>
 
       <!-- Save Notification -->
       <div class="save-notification" id="saveNotification">
@@ -102,7 +104,7 @@
     </main>
 
     <footer>
-      <small>ImageSwap v1.0.0</small>
+      <small>ImageSwap <span id="version-number">v1.0.1</span></small>
     </footer>
   </div>
 

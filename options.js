@@ -193,6 +193,8 @@ function removeUrlPattern(index) {
  * Initialize options page
  */
 function init() {
+  updateVersion();
+
   // Load current settings
   chrome.storage.sync.get(['whitelist', 'urlPatterns', 'replacementMode', 'customCss'], (result) => {
     renderWhitelist(result.whitelist || []);
@@ -243,6 +245,17 @@ function init() {
       });
     });
   });
+}
+
+function updateVersion() {
+  // Get the manifest object
+  const manifestData = chrome.runtime.getManifest();
+
+  // Access the version field
+  const version = manifestData.version;
+
+  // Display it in your options page
+  document.getElementById('version-number').textContent = "v" + version;
 }
 
 // Initialize
