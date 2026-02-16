@@ -31,14 +31,16 @@ A Chrome extension that instantly swaps all webpage images with beautiful, rando
 - Instant on/off without page reload
 
 ⚪ **Whitelist Support**
-- Exclude specific images from replacement by CSS class or ID
+- Exclude specific images from replacement using any CSS selector
+- Supports `.class`, `#id`, and nested selectors like `.parent img`
 - Manage whitelist entries from the settings page
-- Changes apply after page refresh
 
-🌐 **URL Pattern Filtering**
+🌐 **Active URL Filtering**
 - Control which websites the extension runs on
-- Support for wildcard patterns (e.g., `*.example.com`)
-- Allows site-specific image replacement
+- Support for wildcard patterns (e.g., `*://*.example.com/*`)
+- **Per-URL replacement modes** — override the global mode for specific sites
+- **Inline URL editing** — edit URL patterns directly without removing and re-adding
+- Leave the list empty to run on all sites
 
 🎨 **Custom CSS Injection**
 - Add custom CSS rules to enhance image visibility
@@ -46,9 +48,12 @@ A Chrome extension that instantly swaps all webpage images with beautiful, rando
 - Persistent across sessions via Chrome Sync
 
 🔀 **Replacement Modes**
-- **Replace All**: Replace every image on the page
-- **Failed Only**: Replace only broken/failed images
-- Toggle between modes in settings
+- **Global mode**: Set a default replacement behaviour for all sites
+  - *Replace All* — replace every image on the page
+  - *Failed Only* — replace only broken/failed images
+- **Per-URL override**: Each Active URL can use its own mode
+  - *Default* — follow the global mode
+  - *Replace All* / *Failed Only* — override for that specific site
 
 ## Installation
 
@@ -92,21 +97,23 @@ The extension includes all necessary icons in the `icons/` folder:
 Click the extension icon and select **"Settings"** to access the full options page:
 
 **Whitelist Images:**
-1. Choose **Class** or **ID** selector type
-2. Enter the selector (without `.` or `#`)
-3. Click **+** to add
-4. Examples:
-   - Exclude `<img class="logo">` → Add Class: `logo`
-   - Exclude `<img id="header-img">` → Add ID: `header-img`
+1. Enter any CSS selector (e.g. `.logo`, `#header-img`, `.wrapper img`)
+2. Click **Add** to add the entry
+3. Matching images will be skipped during replacement
 
-**URL Patterns:**
-1. Add patterns to control which sites are affected
-2. Supports wildcards: `*.example.com`, `https://example.com/*`
-3. Leave empty to run on all sites
+**Active URLs:**
+1. Add URL patterns to control which sites are affected
+2. Use `*` as a wildcard — e.g. `*://*.example.com/*`, `*://github.com/*`
+3. Leave the list empty to run on all sites
+4. Each URL entry has:
+   - A **replacement mode dropdown** — choose *Default*, *Replace All*, or *Failed Only* per site
+   - An **Edit** button — modify the URL pattern inline without deleting it
+   - A **Remove** button — delete the entry
 
-**Replacement Mode:**
+**Global Replacement Mode:**
 - **Replace All**: Replaces every image (default)
 - **Failed Images Only**: Only replaces broken/failed images
+- Per-URL modes override this when set to anything other than *Default*
 
 **Custom CSS:**
 - Add custom CSS rules to control image appearance
@@ -196,9 +203,9 @@ Service worker that:
 ### options.js
 
 Manages the settings/options page:
-- Whitelist management (add/remove entries)
-- URL pattern configuration
-- Replacement mode selection
+- Whitelist management (add/remove CSS selector entries)
+- URL pattern configuration with inline editing
+- Global and per-URL replacement mode selection
 - Custom CSS editor with sanitization
 
 ## Customization
@@ -270,7 +277,6 @@ const picsumUrl = `https://picsum.photos/seed/${seed}/${width}/${height}?graysca
 
 - [ ] Allow users to set custom default dimensions
 - [ ] Add blur/grayscale filters
-- [ ] Blacklist specific domains
 - [ ] Statistics (images replaced counter)
 - [ ] Support for background images
 
