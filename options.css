@@ -157,6 +157,7 @@ h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
   background: rgba(255, 255, 255, 0.15);
   padding: 12px 16px;
   border-radius: 6px;
@@ -167,6 +168,47 @@ h2 {
 
 .list-item:last-child {
   margin-bottom: 0;
+}
+
+.list-item-pattern {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.url-mode-select {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  appearance: auto;
+}
+
+.url-mode-select:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.url-mode-select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.url-mode-select option {
+  background: #3a3a5c;
+  color: white;
 }
 
 .btn-remove {

@@ -70,7 +70,8 @@ function isUrlAllowed() {
 
   const currentUrl = window.location.href;
 
-  return urlPatternsCache.some(pattern => {
+  return urlPatternsCache.some(entry => {
+    const pattern = typeof entry === 'string' ? entry : entry.pattern;
     // Convert URL pattern to regex
     const regexPattern = pattern
       .replace(/\./g, '\\.')
@@ -78,6 +79,29 @@ function isUrlAllowed() {
     const regex = new RegExp('^' + regexPattern + '$');
     return regex.test(currentUrl);
   });
+}
+
+/**
+ * Get the effective replacement mode for the current URL
+ * Checks per-URL mode first, falls back to global mode
+ */
+function getEffectiveReplacementMode() {
+  const currentUrl = window.location.href;
+
+  for (const entry of urlPatternsCache) {
+    if (typeof entry === 'string') continue;
+    const pattern = entry.pattern;
+    const regexPattern = pattern
+      .replace(/\./g, '\\.')
+      .replace(/\*/g, '.*');
+    const regex = new RegExp('^' + regexPattern + '$');
+    if (regex.test(currentUrl) && entry.mode && entry.mode !== 'default') {
+      return entry.mode;
+    }
+  }
+
+  // Fall back to global replacement mode
+  return replacementMode;
 }
 
 /**
@@ -195,8 +219,9 @@ function replaceImageSrc(img) {
   // Construct Picsum URL with seed for stability
   const picsumUrl = getPicsumUrl(seed, width, height);
 
-  // Check replacement mode
-  if (replacementMode === 'failed') {
+  // Check replacement mode (per-URL override or global)
+  const effectiveMode = getEffectiveReplacementMode();
+  if (effectiveMode === 'failed') {
     // Failed-only mode: only replace if image has failed or will fail
     // Check if already failed
     if (img.complete && img.naturalWidth === 0) {
@@ -282,7 +307,8 @@ function replaceSourceSrcset(source) {
   const img = picture ? picture.querySelector('img') : null;
 
   // In failed-only mode, check if img has loaded successfully
-  if (replacementMode === 'failed') {
+  const effectiveMode = getEffectiveReplacementMode();
+  if (effectiveMode === 'failed') {
     // If img exists and has loaded successfully, don't replace source
     if (img && img.complete && img.naturalWidth > 0) {
       processedImages.add(source);

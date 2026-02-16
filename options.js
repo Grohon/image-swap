@@ -77,18 +77,37 @@ function renderUrlPatterns(patterns = []) {
     return;
   }
 
-  urlList.innerHTML = patterns.map((pattern, index) => `
+  urlList.innerHTML = patterns.map((entry, index) => {
+    const pattern = typeof entry === 'string' ? entry : entry.pattern;
+    const mode = typeof entry === 'string' ? 'default' : (entry.mode || 'default');
+    return `
     <div class="list-item">
-      <span>${pattern}</span>
-      <button class="btn-remove" data-type="url" data-index="${index}">Remove</button>
+      <span class="list-item-pattern">${pattern}</span>
+      <div class="list-item-actions">
+        <select class="url-mode-select" data-type="url-mode" data-index="${index}">
+          <option value="default"${mode === 'default' ? ' selected' : ''}>Default</option>
+          <option value="all"${mode === 'all' ? ' selected' : ''}>Replace All</option>
+          <option value="failed"${mode === 'failed' ? ' selected' : ''}>Failed Only</option>
+        </select>
+        <button class="btn-remove" data-type="url" data-index="${index}">Remove</button>
+      </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 
-  // Add event listeners
+  // Add event listeners for remove buttons
   document.querySelectorAll('[data-type="url"]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const index = parseInt(e.target.getAttribute('data-index'));
       removeUrlPattern(index);
+    });
+  });
+
+  // Add event listeners for mode select dropdowns
+  document.querySelectorAll('[data-type="url-mode"]').forEach(select => {
+    select.addEventListener('change', (e) => {
+      const index = parseInt(e.target.getAttribute('data-index'));
+      updateUrlPatternMode(index, e.target.value);
     });
   });
 }
@@ -159,18 +178,43 @@ function addUrlPattern() {
     const patterns = result.urlPatterns || [];
 
     // Check for duplicates
-    if (patterns.includes(pattern)) {
+    const isDuplicate = patterns.some(entry => {
+      const existing = typeof entry === 'string' ? entry : entry.pattern;
+      return existing === pattern;
+    });
+    if (isDuplicate) {
       urlInput.value = '';
       return;
     }
 
-    patterns.push(pattern);
+    patterns.push({ pattern, mode: 'default' });
 
     chrome.storage.sync.set({ urlPatterns: patterns }, () => {
       renderUrlPatterns(patterns);
       urlInput.value = '';
       showSaveNotification();
     });
+  });
+}
+
+/**
+ * Update replacement mode for a specific URL pattern
+ */
+function updateUrlPatternMode(index, mode) {
+  chrome.storage.sync.get(['urlPatterns'], (result) => {
+    const patterns = result.urlPatterns || [];
+    if (index >= 0 && index < patterns.length) {
+      // Ensure entry is an object
+      if (typeof patterns[index] === 'string') {
+        patterns[index] = { pattern: patterns[index], mode };
+      } else {
+        patterns[index].mode = mode;
+      }
+
+      chrome.storage.sync.set({ urlPatterns: patterns }, () => {
+        showSaveNotification();
+      });
+    }
   });
 }
 
@@ -198,7 +242,22 @@ function init() {
   // Load current settings
   chrome.storage.sync.get(['whitelist', 'urlPatterns', 'replacementMode', 'customCss'], (result) => {
     renderWhitelist(result.whitelist || []);
-    renderUrlPatterns(result.urlPatterns || []);
+
+    // Migrate urlPatterns from flat strings to objects if needed
+    let patterns = result.urlPatterns || [];
+    let needsMigration = false;
+    patterns = patterns.map(entry => {
+      if (typeof entry === 'string') {
+        needsMigration = true;
+        return { pattern: entry, mode: 'default' };
+      }
+      return entry;
+    });
+    if (needsMigration) {
+      chrome.storage.sync.set({ urlPatterns: patterns });
+    }
+
+    renderUrlPatterns(patterns);
 
     // Set replacement mode
     const mode = result.replacementMode || 'all';
