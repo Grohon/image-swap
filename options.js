@@ -81,7 +81,7 @@ function renderUrlPatterns(patterns = []) {
     const pattern = typeof entry === 'string' ? entry : entry.pattern;
     const mode = typeof entry === 'string' ? 'default' : (entry.mode || 'default');
     return `
-    <div class="list-item">
+    <div class="list-item" id="url-item-${index}">
       <span class="list-item-pattern">${pattern}</span>
       <div class="list-item-actions">
         <select class="url-mode-select" data-type="url-mode" data-index="${index}">
@@ -89,6 +89,7 @@ function renderUrlPatterns(patterns = []) {
           <option value="all"${mode === 'all' ? ' selected' : ''}>Replace All</option>
           <option value="failed"${mode === 'failed' ? ' selected' : ''}>Failed Only</option>
         </select>
+        <button class="btn-edit" data-type="url-edit" data-index="${index}">Edit</button>
         <button class="btn-remove" data-type="url" data-index="${index}">Remove</button>
       </div>
     </div>
@@ -100,6 +101,14 @@ function renderUrlPatterns(patterns = []) {
     btn.addEventListener('click', (e) => {
       const index = parseInt(e.target.getAttribute('data-index'));
       removeUrlPattern(index);
+    });
+  });
+
+  // Add event listeners for edit buttons
+  document.querySelectorAll('[data-type="url-edit"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = parseInt(e.target.getAttribute('data-index'));
+      editUrlPattern(index);
     });
   });
 
@@ -183,6 +192,7 @@ function addUrlPattern() {
       return existing === pattern;
     });
     if (isDuplicate) {
+      alert('This URL pattern already exists');
       urlInput.value = '';
       return;
     }
@@ -215,6 +225,93 @@ function updateUrlPatternMode(index, mode) {
         showSaveNotification();
       });
     }
+  });
+}
+
+/**
+ * Edit a URL pattern inline
+ */
+function editUrlPattern(index) {
+  chrome.storage.sync.get(['urlPatterns'], (result) => {
+    const patterns = result.urlPatterns || [];
+    if (index < 0 || index >= patterns.length) return;
+
+    const entry = patterns[index];
+    const currentPattern = typeof entry === 'string' ? entry : entry.pattern;
+    const listItem = document.getElementById(`url-item-${index}`);
+    if (!listItem) return;
+
+    const patternSpan = listItem.querySelector('.list-item-pattern');
+    const editBtn = listItem.querySelector('[data-type="url-edit"]');
+
+    // Replace span with input
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentPattern;
+    input.className = 'input-field list-item-edit-input';
+    patternSpan.replaceWith(input);
+    input.focus();
+    input.select();
+
+    // Change Edit button to Save
+    editBtn.textContent = 'Save';
+    editBtn.classList.remove('btn-edit');
+    editBtn.classList.add('btn-save');
+
+    // Save on click
+    const saveHandler = () => saveUrlPattern(index, input.value.trim());
+    editBtn.removeEventListener('click', editBtn._editHandler);
+    editBtn.addEventListener('click', saveHandler, { once: true });
+
+    // Save on Enter key
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        saveHandler();
+      }
+    });
+
+    // Cancel on Escape
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        // Re-render to reset
+        renderUrlPatterns(patterns);
+      }
+    });
+  });
+}
+
+/**
+ * Save an edited URL pattern
+ */
+function saveUrlPattern(index, newPattern) {
+  if (!newPattern) return;
+
+  chrome.storage.sync.get(['urlPatterns'], (result) => {
+    const patterns = result.urlPatterns || [];
+    if (index < 0 || index >= patterns.length) return;
+
+    // Check for duplicates (excluding the current entry)
+    const isDuplicate = patterns.some((entry, i) => {
+      if (i === index) return false;
+      const existing = typeof entry === 'string' ? entry : entry.pattern;
+      return existing === newPattern;
+    });
+    if (isDuplicate) {
+      alert('This URL pattern already exists');
+      return;
+    }
+
+    // Update the pattern
+    if (typeof patterns[index] === 'string') {
+      patterns[index] = { pattern: newPattern, mode: 'default' };
+    } else {
+      patterns[index].pattern = newPattern;
+    }
+
+    chrome.storage.sync.set({ urlPatterns: patterns }, () => {
+      renderUrlPatterns(patterns);
+      showSaveNotification();
+    });
   });
 }
 
