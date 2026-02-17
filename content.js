@@ -63,14 +63,25 @@ function loadSettings(callback) {
  * Check if current URL matches any pattern
  */
 function isUrlAllowed() {
-  // If no patterns specified, allow all URLs
+  // If no patterns configured at all, allow all URLs
   if (urlPatternsCache.length === 0) {
     return true;
   }
 
+  // Filter to only enabled patterns
+  const enabledPatterns = urlPatternsCache.filter(entry => {
+    if (typeof entry === 'string') return true;
+    return entry.enabled !== false;
+  });
+
+  // If patterns exist but all are disabled, do not activate
+  if (enabledPatterns.length === 0) {
+    return false;
+  }
+
   const currentUrl = window.location.href;
 
-  return urlPatternsCache.some(entry => {
+  return enabledPatterns.some(entry => {
     const pattern = typeof entry === 'string' ? entry : entry.pattern;
     // Convert URL pattern to regex
     const regexPattern = pattern
@@ -90,6 +101,8 @@ function getEffectiveReplacementMode() {
 
   for (const entry of urlPatternsCache) {
     if (typeof entry === 'string') continue;
+    // Skip disabled patterns
+    if (entry.enabled === false) continue;
     const pattern = entry.pattern;
     const regexPattern = pattern
       .replace(/\./g, '\\.')

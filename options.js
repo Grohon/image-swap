@@ -80,10 +80,15 @@ function renderUrlPatterns(patterns = []) {
   urlList.innerHTML = patterns.map((entry, index) => {
     const pattern = typeof entry === 'string' ? entry : entry.pattern;
     const mode = typeof entry === 'string' ? 'default' : (entry.mode || 'default');
+    const enabled = typeof entry === 'string' ? true : (entry.enabled !== false);
     return `
-    <div class="list-item" id="url-item-${index}">
+    <div class="list-item${!enabled ? ' list-item-disabled' : ''}" id="url-item-${index}">
       <span class="list-item-pattern">${pattern}</span>
       <div class="list-item-actions">
+        <label class="toggle-switch" title="${enabled ? 'Disable' : 'Enable'} this URL pattern">
+          <input type="checkbox" data-type="url-toggle" data-index="${index}"${enabled ? ' checked' : ''}>
+          <span class="toggle-slider"></span>
+        </label>
         <select class="url-mode-select" data-type="url-mode" data-index="${index}">
           <option value="default"${mode === 'default' ? ' selected' : ''}>Default</option>
           <option value="all"${mode === 'all' ? ' selected' : ''}>Replace All</option>
@@ -117,6 +122,14 @@ function renderUrlPatterns(patterns = []) {
     select.addEventListener('change', (e) => {
       const index = parseInt(e.target.getAttribute('data-index'));
       updateUrlPatternMode(index, e.target.value);
+    });
+  });
+
+  // Add event listeners for toggle switches
+  document.querySelectorAll('[data-type="url-toggle"]').forEach(toggle => {
+    toggle.addEventListener('change', (e) => {
+      const index = parseInt(e.target.getAttribute('data-index'));
+      toggleUrlPatternEnabled(index, e.target.checked);
     });
   });
 }
@@ -197,7 +210,7 @@ function addUrlPattern() {
       return;
     }
 
-    patterns.push({ pattern, mode: 'default' });
+    patterns.push({ pattern, mode: 'default', enabled: true });
 
     chrome.storage.sync.set({ urlPatterns: patterns }, () => {
       renderUrlPatterns(patterns);
@@ -222,6 +235,27 @@ function updateUrlPatternMode(index, mode) {
       }
 
       chrome.storage.sync.set({ urlPatterns: patterns }, () => {
+        showSaveNotification();
+      });
+    }
+  });
+}
+
+/**
+ * Toggle enabled state for a specific URL pattern
+ */
+function toggleUrlPatternEnabled(index, enabled) {
+  chrome.storage.sync.get(['urlPatterns'], (result) => {
+    const patterns = result.urlPatterns || [];
+    if (index >= 0 && index < patterns.length) {
+      if (typeof patterns[index] === 'string') {
+        patterns[index] = { pattern: patterns[index], mode: 'default', enabled };
+      } else {
+        patterns[index].enabled = enabled;
+      }
+
+      chrome.storage.sync.set({ urlPatterns: patterns }, () => {
+        renderUrlPatterns(patterns);
         showSaveNotification();
       });
     }
@@ -303,7 +337,7 @@ function saveUrlPattern(index, newPattern) {
 
     // Update the pattern
     if (typeof patterns[index] === 'string') {
-      patterns[index] = { pattern: newPattern, mode: 'default' };
+      patterns[index] = { pattern: newPattern, mode: 'default', enabled: true };
     } else {
       patterns[index].pattern = newPattern;
     }
@@ -346,7 +380,7 @@ function init() {
     patterns = patterns.map(entry => {
       if (typeof entry === 'string') {
         needsMigration = true;
-        return { pattern: entry, mode: 'default' };
+        return { pattern: entry, mode: 'default', enabled: true };
       }
       return entry;
     });
