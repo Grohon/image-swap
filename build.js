@@ -6,7 +6,7 @@ const lightning = require('lightningcss');
 const DIST = path.join(__dirname, 'dist');
 
 // Files to minify
-const JS_FILES = ['background.js', 'content.js', 'options.js', 'popup.js'];
+const JS_FILES = ['background.js', 'shared.js', 'content.js', 'options.js', 'popup.js'];
 const CSS_FILES = ['options.css', 'popup.css'];
 
 // Files to copy as-is

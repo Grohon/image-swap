@@ -1,6 +1,6 @@
 {
   "name": "imageswap",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
   "description": "ImageSwap Chrome Extension - Build tools",
   "scripts": {

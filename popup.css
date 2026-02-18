@@ -102,6 +102,57 @@ input:checked + .slider:before {
   transform: translateX(24px);
 }
 
+.switch.small {
+  width: 44px;
+  height: 24px;
+}
+
+.switch.small .slider:before {
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+}
+
+.switch.small input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* Site Toggle Specifics */
+.site-toggle-container {
+  margin-top: -12px;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0 0 8px 8px;
+  padding: 10px 12px;
+  justify-content: space-between;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.site-toggle-info {
+  display: flex;
+  flex-direction: column;
+  max-width: 70%;
+}
+
+.site-toggle-pattern {
+  font-size: 11px;
+  font-family: 'Courier New', Courier, monospace;
+  opacity: 0.9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.site-toggle-action {
+  display: flex;
+  align-items: center;
+}
+
 /* Info Box */
 .info-box {
   background: rgba(255, 255, 255, 0.1);
@@ -120,29 +171,6 @@ input:checked + .slider:before {
   margin-bottom: 0;
 }
 
-/* Action Button (Refresh Images) */
-.btn-action {
-  width: 100%;
-  padding: 12px;
-  background: rgba(74, 222, 128, 0.25);
-  border: 1px solid rgba(74, 222, 128, 0.4);
-  border-radius: 8px;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 16px;
-}
-
-.btn-action:hover {
-  background: rgba(74, 222, 128, 0.35);
-  transform: translateY(-1px);
-}
-
-.btn-action:active {
-  transform: translateY(0);
-}
 
 /* Settings Button */
 .btn-settings {
@@ -168,28 +196,6 @@ input:checked + .slider:before {
   transform: translateY(0);
 }
 
-/* Refresh Button */
-.btn-refresh {
-  width: 100%;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-refresh:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
-}
-
-.btn-refresh:active {
-  transform: translateY(0);
-}
 
 /* Footer */
 footer {

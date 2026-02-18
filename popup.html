@@ -21,20 +21,27 @@
         <span class="toggle-label" id="statusLabel">Enabled</span>
       </div>
 
-      <button id="refreshImages" class="btn-action">
-        ↻ Refresh Images
-      </button>
+      <div id="siteToggleContainer" class="toggle-container site-toggle-container" style="display: none;">
+        <div class="site-toggle-info">
+          <span class="site-toggle-pattern" id="currentSitePattern"></span>
+        </div>
+        <div class="site-toggle-action">
+          <label class="switch small">
+            <input type="checkbox" id="toggleSiteEnabled">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
 
       <button id="openSettings" class="btn-settings">
         ⚙️ Settings
       </button>
 
-      <button id="refreshPage" class="btn-refresh">
-        ↻ Refresh Page
-      </button>
     </main>
   </div>
 
+  <script src="shared.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

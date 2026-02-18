@@ -7,8 +7,19 @@
 const DEFAULT_WIDTH = 300;
 const DEFAULT_HEIGHT = 300;
 
-// Track processed images to avoid reprocessing
-const processedImages = new WeakSet();
+// Track processed images to avoid reprocessing with stable Picsum seeds
+let imageProxyProcessedSet = new WeakSet();
+
+/**
+ * Ensure the processed set is valid
+ */
+function getProcessedSet() {
+  if (!imageProxyProcessedSet || typeof imageProxyProcessedSet.has !== 'function') {
+    imageProxyProcessedSet = new WeakSet();
+  }
+  return imageProxyProcessedSet;
+}
+
 
 // Whitelist cache (CSS selectors)
 let whitelistCache = [];
@@ -53,7 +64,17 @@ function injectCSS() {
 function loadSettings(callback) {
   chrome.storage.sync.get(['whitelist', 'urlPatterns', 'replacementMode'], (result) => {
     whitelistCache = result.whitelist || [];
-    urlPatternsCache = result.urlPatterns || [];
+    const rawPatterns = result.urlPatterns || [];
+
+    // Pre-compile regexes for better performance
+    urlPatternsCache = rawPatterns.map(entry => {
+      const pattern = typeof entry === 'string' ? entry : entry.pattern;
+      return {
+        ...(typeof entry === 'string' ? { pattern } : entry),
+        regex: UrlMatcher.patternToRegex(pattern)
+      };
+    });
+
     replacementMode = result.replacementMode || 'all';
     if (callback) callback();
   });
@@ -69,10 +90,7 @@ function isUrlAllowed() {
   }
 
   // Filter to only enabled patterns
-  const enabledPatterns = urlPatternsCache.filter(entry => {
-    if (typeof entry === 'string') return true;
-    return entry.enabled !== false;
-  });
+  const enabledPatterns = urlPatternsCache.filter(entry => entry.enabled !== false);
 
   // If patterns exist but all are disabled, do not activate
   if (enabledPatterns.length === 0) {
@@ -81,15 +99,8 @@ function isUrlAllowed() {
 
   const currentUrl = window.location.href;
 
-  return enabledPatterns.some(entry => {
-    const pattern = typeof entry === 'string' ? entry : entry.pattern;
-    // Convert URL pattern to regex
-    const regexPattern = pattern
-      .replace(/\./g, '\\.')
-      .replace(/\*/g, '.*');
-    const regex = new RegExp('^' + regexPattern + '$');
-    return regex.test(currentUrl);
-  });
+  // Use pre-compiled regexes
+  return enabledPatterns.some(entry => entry.regex.test(currentUrl));
 }
 
 /**
@@ -100,15 +111,11 @@ function getEffectiveReplacementMode() {
   const currentUrl = window.location.href;
 
   for (const entry of urlPatternsCache) {
-    if (typeof entry === 'string') continue;
     // Skip disabled patterns
     if (entry.enabled === false) continue;
-    const pattern = entry.pattern;
-    const regexPattern = pattern
-      .replace(/\./g, '\\.')
-      .replace(/\*/g, '.*');
-    const regex = new RegExp('^' + regexPattern + '$');
-    if (regex.test(currentUrl) && entry.mode && entry.mode !== 'default') {
+
+    // Use pre-compiled regex
+    if (entry.regex.test(currentUrl) && entry.mode && entry.mode !== 'default') {
       return entry.mode;
     }
   }
@@ -123,14 +130,7 @@ function getEffectiveReplacementMode() {
 function isWhitelisted(img) {
   return whitelistCache.some(selector => {
     try {
-      // First, try direct match (for selectors like .class, #id)
-      if (img.matches(selector)) {
-        return true;
-      }
-
-      // For nested selectors (e.g., .parent img), check if img is in the result set
-      const matches = document.querySelectorAll(selector);
-      return Array.from(matches).includes(img);
+      return img.matches(selector);
     } catch (e) {
       // Fallback for invalid selectors
       return false;
@@ -191,7 +191,7 @@ function getImageDimensions(img) {
  * Check if image already uses Picsum URL
  */
 function isPicsumUrl(url) {
-  return url && url.includes('picsum.photos');
+  return url && (url.includes('picsum.photos/') || url.includes('picsum.photos?'));
 }
 
 /**
@@ -206,20 +206,20 @@ function getPicsumUrl(seed, width, height) {
  */
 function replaceImageSrc(img) {
   // Skip if already processed
-  if (processedImages.has(img)) {
+  if (getProcessedSet().has(img)) {
     return;
   }
 
   // Skip if whitelisted
   if (isWhitelisted(img)) {
-    processedImages.add(img);
+    getProcessedSet().add(img);
     return;
   }
 
   // Skip if already using Picsum
   const currentSrc = img.getAttribute('src') || '';
   if (isPicsumUrl(currentSrc)) {
-    processedImages.add(img);
+    getProcessedSet().add(img);
     return;
   }
 
@@ -241,17 +241,17 @@ function replaceImageSrc(img) {
       img.src = picsumUrl;
       img.classList.add('image-proxy-override');
       removeVisibilityStyles(img);
-      processedImages.add(img);
+      getProcessedSet().add(img);
       return;
     }
 
     // Add error listener for future failures
     img.addEventListener('error', () => {
-      if (!processedImages.has(img)) {
+      if (!getProcessedSet().has(img)) {
         img.src = picsumUrl;
         img.classList.add('image-proxy-override');
         removeVisibilityStyles(img);
-        processedImages.add(img);
+        getProcessedSet().add(img);
       }
     }, { once: true });
 
@@ -260,13 +260,13 @@ function replaceImageSrc(img) {
     img.src = picsumUrl;
     img.classList.add('image-proxy-override');
     removeVisibilityStyles(img);
-    processedImages.add(img);
+    getProcessedSet().add(img);
 
     // Add error handler for Picsum API failures
     img.addEventListener('error', (e) => {
       // If Picsum fails, mark as processed to avoid infinite loops
       if (img.src.includes('picsum.photos')) {
-        processedImages.add(img);
+        getProcessedSet().add(img);
       }
     }, { once: true });
   }
@@ -291,7 +291,7 @@ function removeVisibilityStyles(img) {
  */
 function replaceSourceSrcset(source) {
   // Skip if already processed
-  if (processedImages.has(source)) {
+  if (getProcessedSet().has(source)) {
     return;
   }
 
@@ -304,7 +304,7 @@ function replaceSourceSrcset(source) {
       classList: picture.classList
     };
     if (isWhitelisted(mockImg)) {
-      processedImages.add(source);
+      getProcessedSet().add(source);
       return;
     }
   }
@@ -312,7 +312,7 @@ function replaceSourceSrcset(source) {
   // Skip if already using Picsum
   const currentSrcset = source.getAttribute('srcset') || '';
   if (isPicsumUrl(currentSrcset)) {
-    processedImages.add(source);
+    getProcessedSet().add(source);
     return;
   }
 
@@ -324,14 +324,14 @@ function replaceSourceSrcset(source) {
   if (effectiveMode === 'failed') {
     // If img exists and has loaded successfully, don't replace source
     if (img && img.complete && img.naturalWidth > 0) {
-      processedImages.add(source);
+      getProcessedSet().add(source);
       return;
     }
 
     // If img hasn't loaded yet or failed, add error listener
     if (img && !img.complete) {
       img.addEventListener('error', () => {
-        if (!processedImages.has(source)) {
+        if (!getProcessedSet().has(source)) {
           replaceSourceWithPicsum(source, img);
         }
       }, { once: true });
@@ -381,7 +381,7 @@ function replaceSourceWithPicsum(source, img) {
   }
 
   // Mark as processed
-  processedImages.add(source);
+  getProcessedSet().add(source);
 }
 
 /**
@@ -455,7 +455,7 @@ function observeDynamicImages() {
           const img = mutation.target;
           // Only reprocess if src was changed to a non-Picsum URL
           if (mutation.attributeName === 'src' && !isPicsumUrl(img.src)) {
-            processedImages.delete(img); // Remove from processed set
+            getProcessedSet().delete(img); // Remove from processed set
             replaceImageSrc(img);
           }
         }
@@ -465,7 +465,7 @@ function observeDynamicImages() {
           const source = mutation.target;
           // Only reprocess if srcset was changed to a non-Picsum URL
           if (mutation.attributeName === 'srcset' && !isPicsumUrl(source.srcset)) {
-            processedImages.delete(source);
+            getProcessedSet().delete(source);
             replaceSourceSrcset(source);
           }
         }
@@ -481,7 +481,10 @@ function observeDynamicImages() {
     attributeFilter: ['src', 'srcset']
   });
 
+  return true; // Return true to indicate observer started
 }
+
+let observerStarted = false;
 
 /**
  * Initialize the extension
@@ -504,12 +507,12 @@ function init() {
 
     // Set up observer for dynamic content
     if (document.body) {
-      observeDynamicImages();
+      observerStarted = observeDynamicImages();
     } else {
       // Wait for body to be available
       const bodyObserver = new MutationObserver((mutations, obs) => {
         if (document.body) {
-          observeDynamicImages();
+          observerStarted = observeDynamicImages();
           obs.disconnect();
         }
       });
@@ -526,23 +529,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     sendResponse({ success: true });
   } else if (request.action === 'settingsUpdated') {
-    // Reload settings when changed from options page
+    // Reload settings and re-evaluate
     loadSettings(() => {
+      if (isUrlAllowed()) {
+        processImages();
+        if (!observerStarted && document.body) {
+          observerStarted = observeDynamicImages();
+        }
+      }
     });
-    sendResponse({ success: true });
-  } else if (request.action === 'reprocessImages') {
-    // Reprocess all images without page reload
-
-    // Note: WeakSet doesn't have clear(), so we create a new one
-    // This will allow all images to be reprocessed
-    const oldProcessed = processedImages;
-    Object.setPrototypeOf(processedImages, null); // Clear the WeakSet reference
-
-    // Reload settings and reprocess
-    loadSettings(() => {
-      processImages();
-    });
-
     sendResponse({ success: true });
   } else if (request.action === 'reloadCss') {
     // Reload injected CSS
