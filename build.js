@@ -3,7 +3,10 @@ const path = require('path');
 const { minify } = require('terser');
 const lightning = require('lightningcss');
 
-const DIST = path.join(__dirname, 'dist');
+const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+const VERSION = pkg.version;
+const DIST_ROOT = path.join(__dirname, 'dist');
+const DIST = path.join(DIST_ROOT, 'image-swap');
 
 // Files to minify
 const JS_FILES = ['background.js', 'shared.js', 'content.js', 'options.js', 'popup.js'];
@@ -14,7 +17,7 @@ const COPY_FILES = ['manifest.json', 'options.html', 'popup.html'];
 const COPY_DIRS = ['icons'];
 
 function cleanDist() {
-  fs.rmSync(DIST, { recursive: true, force: true });
+  fs.rmSync(DIST_ROOT, { recursive: true, force: true });
   fs.mkdirSync(DIST, { recursive: true });
 }
 
@@ -90,7 +93,8 @@ async function createZip() {
   // Use Node.js built-in zip support or archiver
   // For simplicity, use a child process with PowerShell on Windows
   const { execSync } = require('child_process');
-  const zipPath = path.join(__dirname, 'image-swap.zip');
+  const zipName = `image-swap-${VERSION}.zip`;
+  const zipPath = path.join(__dirname, zipName);
 
   // Remove existing zip
   if (fs.existsSync(zipPath)) {
@@ -98,13 +102,14 @@ async function createZip() {
   }
 
   // Use PowerShell Compress-Archive
+  // Zip the folder itself so that it contains the folder in the root
   execSync(
-    `powershell -Command "Compress-Archive -Path '${DIST}\\*' -DestinationPath '${zipPath}' -Force"`,
+    `powershell -Command "Compress-Archive -Path '${DIST}' -DestinationPath '${zipPath}' -Force"`,
     { stdio: 'inherit' }
   );
 
   const zipSize = fs.statSync(zipPath).size;
-  console.log(`\n📦 Created image-swap.zip (${(zipSize / 1024).toFixed(1)} KB)`);
+  console.log(`\n📦 Created ${zipName} (${(zipSize / 1024).toFixed(1)} KB)`);
 }
 
 async function build() {
