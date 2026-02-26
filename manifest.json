@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ImageSwap",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Instantly swap all webpage images with beautiful Picsum photos. Perfect for designers and developers.",
   "author": "Abu Foysal",
   "permissions": [

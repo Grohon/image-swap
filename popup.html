@@ -22,14 +22,24 @@
       </div>
 
       <div id="siteToggleContainer" class="toggle-container site-toggle-container" style="display: none;">
-        <div class="site-toggle-info">
-          <span class="site-toggle-pattern" id="currentSitePattern"></span>
+        <div class="site-toggle-row">
+          <div class="site-toggle-info">
+            <span class="site-toggle-pattern" id="currentSitePattern"></span>
+          </div>
+          <div class="site-toggle-action">
+            <label class="switch small">
+              <input type="checkbox" id="toggleSiteEnabled">
+              <span class="slider"></span>
+            </label>
+          </div>
         </div>
-        <div class="site-toggle-action">
-          <label class="switch small">
-            <input type="checkbox" id="toggleSiteEnabled">
-            <span class="slider"></span>
-          </label>
+        <div class="site-mode-row" id="siteModeRow">
+          <span class="site-mode-label">Mode</span>
+          <select id="siteMode" class="site-mode-select">
+            <option value="default">Default</option>
+            <option value="all">Replace All</option>
+            <option value="failed">Failed Only</option>
+          </select>
         </div>
       </div>
 

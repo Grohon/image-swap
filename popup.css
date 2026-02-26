@@ -126,8 +126,16 @@ input:checked + .slider:before {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0 0 8px 8px;
   padding: 10px 12px;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 8px;
   border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.site-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .site-toggle-info {
@@ -151,6 +159,46 @@ input:checked + .slider:before {
 .site-toggle-action {
   display: flex;
   align-items: center;
+}
+
+.site-mode-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 8px;
+}
+
+.site-mode-label {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.site-mode-select {
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.site-mode-select:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.site-mode-select:focus {
+  border-color: #4ade80;
+}
+
+.site-mode-select option {
+  background: #324056;
+  color: #fff;
 }
 
 /* Info Box */

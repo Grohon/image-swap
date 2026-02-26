@@ -137,15 +137,25 @@ async function checkCurrentSiteMatch() {
 
     const patternStr = typeof matchingPattern === 'string' ? matchingPattern : matchingPattern.pattern;
     const isEnabled = typeof matchingPattern === 'string' ? true : (matchingPattern.enabled !== false);
+    const currentMode = typeof matchingPattern === 'string' ? 'default' : (matchingPattern.mode || 'default');
 
     currentSitePattern.textContent = patternStr;
     toggleSiteEnabled.checked = isEnabled;
     siteToggleContainer.style.display = 'flex';
 
+    // Set mode dropdown
+    const siteModeSelect = document.getElementById('siteMode');
+    siteModeSelect.value = currentMode;
+
     // Handle site-specific toggle change
     toggleSiteEnabled.onchange = (e) => {
       const newEnabled = e.target.checked;
       updateSitePatternEnabled(matchingIndex, newEnabled);
+    };
+
+    // Handle mode change
+    siteModeSelect.onchange = (e) => {
+      updateSitePatternMode(matchingIndex, e.target.value);
     };
   } else {
     siteToggleContainer.style.display = 'none';
@@ -163,6 +173,31 @@ function updateSitePatternEnabled(index, enabled) {
         patterns[index] = { pattern: patterns[index], mode: 'default', enabled };
       } else {
         patterns[index].enabled = enabled;
+      }
+
+      chrome.storage.sync.set({ urlPatterns: patterns }, () => {
+        // Notify tabs
+        chrome.tabs.query({}, (tabs) => {
+          tabs.forEach(tab => {
+            chrome.tabs.sendMessage(tab.id, { action: 'settingsUpdated' }).catch(() => {});
+          });
+        });
+      });
+    }
+  });
+}
+
+/**
+ * Update replacement mode for a specific URL pattern
+ */
+function updateSitePatternMode(index, mode) {
+  chrome.storage.sync.get(['urlPatterns'], (result) => {
+    const patterns = [...(result.urlPatterns || [])];
+    if (index >= 0 && index < patterns.length) {
+      if (typeof patterns[index] === 'string') {
+        patterns[index] = { pattern: patterns[index], mode };
+      } else {
+        patterns[index].mode = mode;
       }
 
       chrome.storage.sync.set({ urlPatterns: patterns }, () => {
